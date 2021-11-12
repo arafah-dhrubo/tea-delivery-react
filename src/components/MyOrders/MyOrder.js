@@ -1,0 +1,41 @@
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router';
+import Order from './Order';
+
+const MyOrder = () => {
+    const [orders, setOrders] = useState({});
+    const { email } = useParams();
+    useEffect(() => {
+        fetch(`https://fierce-stream-76802.herokuapp.com/my-orders/${email}`)
+            .then(res => res.json())
+            .then(data => {
+                setOrders(data);
+            });
+    })
+    const handleDelete = id => {
+        const url = `https://fierce-stream-76802.herokuapp.com/placeorder/${id}`;
+        fetch(url, {
+            method: 'DELETE'
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (window.confirm("Are you sure?")) {
+                    if (data.deletedCount) {
+                        alert("Order cancelled successfully!")
+                        const remaining = Object.entries(orders).filter(order => order._id !== id);
+                        setOrders(remaining);
+                    }
+                }
+            })
+    }
+    const all_orders = Object.entries(orders).map(order => <Order order={order} key={order._id} handleDelete={handleDelete} />)
+    console.log({ all_orders })
+    return (
+        <div>
+
+            {all_orders.length === 0 ? <h1>Please place an order</h1> : all_orders}
+        </div>
+    )
+}
+
+export default MyOrder
